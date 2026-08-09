@@ -1,4 +1,4 @@
-import { Users, TrendingUp, DollarSign, Wallet, Lock, History } from "lucide-react";
+import { Users, TrendingUp, DollarSign, Wallet, Lock, History, Landmark } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -19,6 +19,7 @@ export default async function DashboardPage() {
     { data: subscriberSnapshot },
     { data: currentFySnapshot },
     { data: priorFySnapshot },
+    { data: allTimeSnapshot },
   ] = await Promise.all([
     supabase
       .from("subscriber_snapshots")
@@ -43,6 +44,13 @@ export default async function DashboardPage() {
         "period_start, period_end, total_income, total_expenses, net_profit, currency, fetched_at"
       )
       .eq("period_type", "prior_fy")
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("financial_snapshots")
+      .select("period_start, period_end, total_income, currency, fetched_at")
+      .eq("period_type", "all_time")
       .order("fetched_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
@@ -178,6 +186,28 @@ export default async function DashboardPage() {
               )}
               icon={History}
               hint="What we're aiming to match and beat this FY"
+            />
+          </div>
+        </section>
+      )}
+
+      {allTimeSnapshot && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            All Time Revenue
+            <span className="ml-2 normal-case font-normal text-muted-foreground/70">
+              (since {formatDate(allTimeSnapshot.period_start)})
+            </span>
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="Total revenue"
+              value={formatCurrency(
+                allTimeSnapshot.total_income,
+                allTimeSnapshot.currency
+              )}
+              icon={Landmark}
+              hint={`As of ${formatDateTime(allTimeSnapshot.fetched_at)}`}
             />
           </div>
         </section>

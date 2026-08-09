@@ -213,36 +213,36 @@ export type Database = {
           currency: string
           fetched_at: string
           id: string
-          net_profit: number
+          net_profit: number | null
           period_end: string
           period_start: string
           period_type: string
           source: string
-          total_expenses: number
+          total_expenses: number | null
           total_income: number
         }
         Insert: {
           currency?: string
           fetched_at?: string
           id?: string
-          net_profit: number
+          net_profit?: number | null
           period_end: string
           period_start: string
           period_type?: string
           source?: string
-          total_expenses: number
+          total_expenses?: number | null
           total_income: number
         }
         Update: {
           currency?: string
           fetched_at?: string
           id?: string
-          net_profit?: number
+          net_profit?: number | null
           period_end?: string
           period_start?: string
           period_type?: string
           source?: string
-          total_expenses?: number
+          total_expenses?: number | null
           total_income?: number
         }
         Relationships: []
