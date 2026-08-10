@@ -10,16 +10,35 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { LucideIcon } from "lucide-react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Users,
+  DollarSign,
+  CreditCard,
+  TrendingUp,
+} from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+// Server Components can't pass function/component references (like a
+// Lucide icon component) as props to a Client Component — Next.js will
+// throw at runtime. So metrics carry a serializable icon *key* instead,
+// and this client component resolves it to the actual icon locally.
+export type OverviewMetricIcon = "users" | "revenue" | "stripe" | "mrr";
+
+const ICONS: Record<OverviewMetricIcon, typeof Users> = {
+  users: Users,
+  revenue: DollarSign,
+  stripe: CreditCard,
+  mrr: TrendingUp,
+};
+
 export type OverviewMetric = {
   label: string;
   value: string;
-  icon: LucideIcon;
+  icon: OverviewMetricIcon;
   /** percentage change vs ~7 days ago, or null if not enough history yet */
   deltaPct: number | null;
 };
@@ -105,10 +124,12 @@ export function SubscriberOverview({
   return (
     <Card className="overflow-hidden p-0">
       <div className="grid grid-cols-2 divide-y divide-border sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
-        {metrics.map((m) => (
+        {metrics.map((m) => {
+          const Icon = ICONS[m.icon];
+          return (
           <div key={m.label} className="p-5">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <m.icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" />
               {m.label}
             </div>
             <div className="mt-2 flex items-center gap-2">
@@ -118,7 +139,8 @@ export function SubscriberOverview({
               <DeltaBadge value={m.deltaPct} />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="border-t p-5">

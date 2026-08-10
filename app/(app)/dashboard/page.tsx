@@ -1,13 +1,4 @@
-import {
-  Users,
-  TrendingUp,
-  DollarSign,
-  Wallet,
-  Lock,
-  History,
-  Landmark,
-  CreditCard,
-} from "lucide-react";
+import { DollarSign, Wallet, Lock, History, Landmark } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -107,7 +98,7 @@ export default async function DashboardPage() {
         {
           label: "Subscriber count",
           value: formatNumber(latest.active_subscriptions),
-          icon: Users,
+          icon: "users",
           deltaPct: weekAgo
             ? pctChange(latest.active_subscriptions, weekAgo.active_subscriptions)
             : null,
@@ -115,7 +106,7 @@ export default async function DashboardPage() {
         {
           label: "Revenue (28d)",
           value: formatCurrency(latest.revenue_28d, latest.currency),
-          icon: DollarSign,
+          icon: "revenue",
           deltaPct:
             weekAgo && weekAgo.revenue_28d
               ? pctChange(latest.revenue_28d ?? 0, weekAgo.revenue_28d)
@@ -124,7 +115,7 @@ export default async function DashboardPage() {
         {
           label: "Stripe",
           value: formatNumber(latest.stripe_active_subscriptions),
-          icon: CreditCard,
+          icon: "stripe",
           deltaPct:
             weekAgo && weekAgo.stripe_active_subscriptions
               ? pctChange(
@@ -136,7 +127,7 @@ export default async function DashboardPage() {
         {
           label: "MRR",
           value: formatCurrency(latest.mrr, latest.currency),
-          icon: TrendingUp,
+          icon: "mrr",
           deltaPct: weekAgo ? pctChange(latest.mrr, weekAgo.mrr) : null,
         },
       ]
