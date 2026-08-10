@@ -1,7 +1,21 @@
-import { Users, TrendingUp, DollarSign, Wallet, Lock, History, Landmark } from "lucide-react";
+import {
+  Users,
+  TrendingUp,
+  DollarSign,
+  Wallet,
+  Lock,
+  History,
+  Landmark,
+  CreditCard,
+} from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/stat-card";
+import {
+  SubscriberOverview,
+  type OverviewMetric,
+  type SubscriberHistoryPoint,
+} from "@/components/dashboard/subscriber-overview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatCurrency,
@@ -12,11 +26,16 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function pctChange(current: number, previous: number): number | null {
+  if (!previous) return null;
+  return ((current - previous) / previous) * 100;
+}
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
   const [
-    { data: subscriberSnapshot },
+    { data: subscriberHistoryRaw },
     { data: currentFySnapshot },
     { data: priorFySnapshot },
     { data: allTimeSnapshot },
@@ -27,8 +46,7 @@ export default async function DashboardPage() {
         "active_subscriptions, revenuecat_active_subscriptions, stripe_active_subscriptions, mrr, revenue_28d, currency, fetched_at"
       )
       .order("fetched_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(200),
     supabase
       .from("financial_snapshots")
       .select(
@@ -56,6 +74,80 @@ export default async function DashboardPage() {
       .maybeSingle(),
   ]);
 
+  const subscriberHistory = (subscriberHistoryRaw ?? [])
+    .slice()
+    .reverse(); // ascending order for the chart
+
+  const latest = subscriberHistory[subscriberHistory.length - 1];
+
+  // Find the snapshot closest to 7 days before the latest one, for the
+  // period-over-period delta badges. Falls back to null (shown as "—")
+  // until enough sync history has accumulated.
+  let weekAgo: typeof latest | undefined;
+  if (latest) {
+    const target = new Date(latest.fetched_at).getTime() - 7 * 24 * 60 * 60 * 1000;
+    let best: typeof latest | undefined;
+    let bestDiff = Infinity;
+    for (const row of subscriberHistory) {
+      const diff = Math.abs(new Date(row.fetched_at).getTime() - target);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = row;
+      }
+    }
+    // Only use it if it's actually roughly a week old (within 2 days),
+    // otherwise there isn't enough history yet to call it a "7 day" delta.
+    if (best && best !== latest && bestDiff < 2 * 24 * 60 * 60 * 1000) {
+      weekAgo = best;
+    }
+  }
+
+  const metrics: OverviewMetric[] = latest
+    ? [
+        {
+          label: "Subscriber count",
+          value: formatNumber(latest.active_subscriptions),
+          icon: Users,
+          deltaPct: weekAgo
+            ? pctChange(latest.active_subscriptions, weekAgo.active_subscriptions)
+            : null,
+        },
+        {
+          label: "Revenue (28d)",
+          value: formatCurrency(latest.revenue_28d, latest.currency),
+          icon: DollarSign,
+          deltaPct:
+            weekAgo && weekAgo.revenue_28d
+              ? pctChange(latest.revenue_28d ?? 0, weekAgo.revenue_28d)
+              : null,
+        },
+        {
+          label: "Stripe",
+          value: formatNumber(latest.stripe_active_subscriptions),
+          icon: CreditCard,
+          deltaPct:
+            weekAgo && weekAgo.stripe_active_subscriptions
+              ? pctChange(
+                  latest.stripe_active_subscriptions ?? 0,
+                  weekAgo.stripe_active_subscriptions
+                )
+              : null,
+        },
+        {
+          label: "MRR",
+          value: formatCurrency(latest.mrr, latest.currency),
+          icon: TrendingUp,
+          deltaPct: weekAgo ? pctChange(latest.mrr, weekAgo.mrr) : null,
+        },
+      ]
+    : [];
+
+  const chartHistory: SubscriberHistoryPoint[] = subscriberHistory.map((row) => ({
+    date: row.fetched_at,
+    label: formatDate(row.fetched_at),
+    subscribers: row.active_subscriptions,
+  }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -69,42 +161,8 @@ export default async function DashboardPage() {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           Subscribers
         </h2>
-        {subscriberSnapshot ? (
-          <div className="space-y-3">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <StatCard
-                label="Active subscriptions"
-                value={formatNumber(subscriberSnapshot.active_subscriptions)}
-                icon={Users}
-                hint={`As of ${formatDateTime(subscriberSnapshot.fetched_at)}`}
-              />
-              <StatCard
-                label="Subscription MRR"
-                value={formatCurrency(
-                  subscriberSnapshot.mrr,
-                  subscriberSnapshot.currency
-                )}
-                icon={TrendingUp}
-                hint={`As of ${formatDateTime(subscriberSnapshot.fetched_at)}`}
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <StatCard
-                label="RevenueCat subscribers"
-                value={formatNumber(
-                  subscriberSnapshot.revenuecat_active_subscriptions
-                )}
-                className="border-dashed"
-              />
-              <StatCard
-                label="Stripe subscribers"
-                value={formatNumber(
-                  subscriberSnapshot.stripe_active_subscriptions
-                )}
-                className="border-dashed"
-              />
-            </div>
-          </div>
+        {latest ? (
+          <SubscriberOverview metrics={metrics} history={chartHistory} />
         ) : (
           <EmptyStateCard message="No subscriber data yet. It will appear once the sync process runs." />
         )}
