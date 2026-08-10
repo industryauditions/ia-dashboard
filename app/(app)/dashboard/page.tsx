@@ -11,10 +11,10 @@ import {
 
 import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/stat-card";
-import {
-  SubscriberOverview,
-  type OverviewMetric,
-  type SubscriberHistoryPoint,
+import { SubscriberOverviewClient } from "@/components/dashboard/subscriber-overview-client";
+import type {
+  OverviewMetric,
+  SubscriberHistoryPoint,
 } from "@/components/dashboard/subscriber-overview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
           Subscribers
         </h2>
         {latest ? (
-          <SubscriberOverview metrics={metrics} history={chartHistory} />
+          <SubscriberOverviewClient metrics={metrics} history={chartHistory} />
         ) : (
           <EmptyStateCard message="No subscriber data yet. It will appear once the sync process runs." />
         )}
