@@ -377,8 +377,10 @@ export function ScheduleItemDialog({
         <DialogFooter className={mode === "edit" ? "sm:justify-between" : undefined}>
           {mode === "edit" &&
             (confirmingDelete ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Delete this audition?</span>
+              <div className="flex w-full items-center justify-end gap-2">
+                <span className="mr-auto whitespace-nowrap text-xs text-muted-foreground">
+                  Delete this audition?
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -408,14 +410,16 @@ export function ScheduleItemDialog({
                 Delete
               </Button>
             ))}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving…" : mode === "create" ? "Add audition" : "Save changes"}
-            </Button>
-          </div>
+          {!confirmingDelete && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving…" : mode === "create" ? "Add audition" : "Save changes"}
+              </Button>
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
