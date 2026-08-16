@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PartnerProfileEditor } from "@/components/annual-partners/partner-profile-editor";
+import { PartnerScheduleList } from "@/components/annual-partners/partner-schedule-list";
+import type { PostScheduleRow } from "@/components/annual-partners/post-schedule-table";
 import { NotesPanel, type NoteRow } from "@/components/notes/notes-panel";
 import { formatDate } from "@/lib/format";
 import { currentPackage } from "@/lib/partner-packages";
@@ -19,27 +21,36 @@ export default async function PartnerDetailPage({
 }) {
   const supabase = createClient();
 
-  const [{ data: partner }, { data: notesRaw }, { data: schedule }, { data: packages }] =
-    await Promise.all([
-      supabase.from("annual_partners").select("*").eq("id", params.id).single(),
-      supabase
-        .from("partner_notes")
-        .select("id, note, created_at, author_id, profiles(display_name, email)")
-        .eq("partner_id", params.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("post_schedule")
-        .select(
-          "id, raw_company_text, audition_date_text, posting_time_text, is_posted, country"
-        )
-        .eq("partner_id", params.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("partner_packages")
-        .select("*")
-        .eq("partner_id", params.id)
-        .order("package_number", { ascending: true }),
-    ]);
+  const [
+    { data: partner },
+    { data: notesRaw },
+    { data: schedule },
+    { data: packages },
+    { data: allPartners },
+  ] = await Promise.all([
+    supabase.from("annual_partners").select("*").eq("id", params.id).single(),
+    supabase
+      .from("partner_notes")
+      .select("id, note, created_at, author_id, profiles(display_name, email)")
+      .eq("partner_id", params.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("post_schedule")
+      .select(
+        "id, raw_company_text, partner_id, audition_date_text, post_live_at, is_posted, country, notes, sort_order"
+      )
+      .eq("partner_id", params.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("partner_packages")
+      .select("*")
+      .eq("partner_id", params.id)
+      .order("package_number", { ascending: true }),
+    supabase
+      .from("annual_partners")
+      .select("id, canonical_name")
+      .order("canonical_name", { ascending: true }),
+  ]);
 
   if (!partner) {
     notFound();
@@ -122,40 +133,24 @@ export default async function PartnerDetailPage({
             <CardTitle className="text-base">Post schedule</CardTitle>
           </CardHeader>
           <CardContent>
-            {schedule && schedule.length > 0 ? (
-              <div className="space-y-3">
-                {schedule.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {s.raw_company_text || partner.canonical_name}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {[s.audition_date_text, s.posting_time_text, s.country]
-                          .filter(Boolean)
-                          .join(" · ") || "No schedule details"}
-                      </p>
-                    </div>
-                    {s.is_posted ? (
-                      <Badge variant="success" className="shrink-0">
-                        Posted
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="shrink-0">
-                        Pending
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No post schedule entries for this partner yet.
-              </p>
-            )}
+            <PartnerScheduleList
+              rows={(schedule ?? []).map(
+                (s): PostScheduleRow => ({
+                  id: s.id,
+                  raw_company_text: s.raw_company_text,
+                  partner_id: s.partner_id,
+                  audition_date_text: s.audition_date_text,
+                  post_live_at: s.post_live_at,
+                  country: s.country,
+                  is_posted: s.is_posted,
+                  notes: s.notes,
+                  sort_order: s.sort_order,
+                  partner_name: null,
+                })
+              )}
+              partners={allPartners ?? []}
+              fallbackName={partner.canonical_name}
+            />
           </CardContent>
         </Card>
       </div>

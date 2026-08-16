@@ -36,7 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/client";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import {
   ScheduleItemDialog,
   type PartnerOption,
@@ -92,7 +92,9 @@ function SortableRow({
       <TableCell className="font-medium">
         {row.partner_name || row.raw_company_text || "—"}
       </TableCell>
-      <TableCell>{row.audition_date_text || "—"}</TableCell>
+      <TableCell>
+        {row.audition_date_text ? formatDate(row.audition_date_text) : "—"}
+      </TableCell>
       <TableCell>{row.post_live_at ? formatDateTime(row.post_live_at) : "—"}</TableCell>
       <TableCell>{row.country || "—"}</TableCell>
       <TableCell>

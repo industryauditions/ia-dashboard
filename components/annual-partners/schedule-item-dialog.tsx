@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,6 +163,8 @@ export function ScheduleItemDialog({
   const [notes, setNotes] = useState(row?.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Re-sync form fields whenever a different row is opened for editing.
   useEffect(() => {
@@ -177,8 +179,24 @@ export function ScheduleItemDialog({
     setIsPosted(row?.is_posted ?? false);
     setNotes(row?.notes ?? "");
     setError(null);
+    setConfirmingDelete(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dialogOpen, row?.id]);
+
+  async function handleDelete() {
+    if (!row) return;
+    setDeleting(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.from("post_schedule").delete().eq("id", row.id);
+    setDeleting(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setDialogOpen(false);
+    router.refresh();
+  }
 
   function handlePartnerChange(value: string) {
     setPartnerId(value);
@@ -356,13 +374,48 @@ export function ScheduleItemDialog({
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving…" : mode === "create" ? "Add audition" : "Save changes"}
-          </Button>
+        <DialogFooter className={mode === "edit" ? "sm:justify-between" : undefined}>
+          {mode === "edit" &&
+            (confirmingDelete ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Delete this audition?</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? "Deleting…" : "Confirm delete"}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setConfirmingDelete(true)}
+                disabled={saving}
+              >
+                <Trash2 className="mr-1.5 h-4 w-4" />
+                Delete
+              </Button>
+            ))}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving…" : mode === "create" ? "Add audition" : "Save changes"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
