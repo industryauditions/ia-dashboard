@@ -29,7 +29,7 @@ export default async function AnnualPartnersPage() {
       supabase
         .from("post_schedule")
         .select(
-          "id, raw_company_text, audition_date_text, posting_time_text, country, is_posted, grid_prepped, story_prepped, partner_id, annual_partners(canonical_name)"
+          "id, raw_company_text, audition_date_text, post_live_at, country, is_posted, notes, sort_order, partner_id, annual_partners(canonical_name)"
         )
         .order("created_at", { ascending: false }),
     ]);
@@ -62,14 +62,20 @@ export default async function AnnualPartnersPage() {
   const rows: PostScheduleRow[] = (postSchedule ?? []).map((r) => ({
     id: r.id,
     raw_company_text: r.raw_company_text,
+    partner_id: r.partner_id,
     audition_date_text: r.audition_date_text,
-    posting_time_text: r.posting_time_text,
+    post_live_at: r.post_live_at,
     country: r.country,
     is_posted: r.is_posted,
-    grid_prepped: r.grid_prepped,
-    story_prepped: r.story_prepped,
+    notes: r.notes,
+    sort_order: r.sort_order,
     partner_name: (r as { annual_partners?: { canonical_name: string } | null })
       .annual_partners?.canonical_name ?? null,
+  }));
+
+  const partnerOptions = (partners ?? []).map((p) => ({
+    id: p.id,
+    canonical_name: p.canonical_name,
   }));
 
   return (
@@ -93,14 +99,8 @@ export default async function AnnualPartnersPage() {
         <TabsContent value="partners" className="mt-6">
           {partnerCards.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {partnerCards.map(({ partner, packages: partnerPackages, current, days }) => (
-                <PartnerCard
-                  key={partner.id}
-                  partner={partner}
-                  packages={partnerPackages}
-                  current={current}
-                  days={days}
-                />
+              {partnerCards.map(({ partner, current, days }) => (
+                <PartnerCard key={partner.id} partner={partner} current={current} days={days} />
               ))}
             </div>
           ) : (
@@ -114,7 +114,7 @@ export default async function AnnualPartnersPage() {
         </TabsContent>
 
         <TabsContent value="schedule" className="mt-6">
-          <PostScheduleTable rows={rows} />
+          <PostScheduleTable rows={rows} partners={partnerOptions} />
         </TabsContent>
       </Tabs>
     </div>

@@ -416,10 +416,13 @@ export type Database = {
           is_posted: boolean
           legacy_color: string | null
           notes: string | null
+          package_id: string | null
           partner_id: string | null
+          post_live_at: string | null
           posting_time_text: string | null
           raw_company_text: string | null
           schema_era: string
+          sort_order: number | null
           story_prepped: boolean | null
         }
         Insert: {
@@ -433,10 +436,13 @@ export type Database = {
           is_posted?: boolean
           legacy_color?: string | null
           notes?: string | null
+          package_id?: string | null
           partner_id?: string | null
+          post_live_at?: string | null
           posting_time_text?: string | null
           raw_company_text?: string | null
           schema_era?: string
+          sort_order?: number | null
           story_prepped?: boolean | null
         }
         Update: {
@@ -450,10 +456,13 @@ export type Database = {
           is_posted?: boolean
           legacy_color?: string | null
           notes?: string | null
+          package_id?: string | null
           partner_id?: string | null
+          post_live_at?: string | null
           posting_time_text?: string | null
           raw_company_text?: string | null
           schema_era?: string
+          sort_order?: number | null
           story_prepped?: boolean | null
         }
         Relationships: [
@@ -462,6 +471,13 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "annual_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_schedule_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "partner_packages"
             referencedColumns: ["id"]
           },
         ]

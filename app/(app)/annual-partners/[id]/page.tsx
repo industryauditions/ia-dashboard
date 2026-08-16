@@ -5,9 +5,10 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PartnerEditor } from "@/components/annual-partners/partner-editor";
+import { PartnerProfileEditor } from "@/components/annual-partners/partner-profile-editor";
 import { NotesPanel, type NoteRow } from "@/components/notes/notes-panel";
 import { formatDate } from "@/lib/format";
+import { currentPackage } from "@/lib/partner-packages";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function PartnerDetailPage({
 }) {
   const supabase = createClient();
 
-  const [{ data: partner }, { data: notesRaw }, { data: schedule }] =
+  const [{ data: partner }, { data: notesRaw }, { data: schedule }, { data: packages }] =
     await Promise.all([
       supabase.from("annual_partners").select("*").eq("id", params.id).single(),
       supabase
@@ -33,11 +34,18 @@ export default async function PartnerDetailPage({
         )
         .eq("partner_id", params.id)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("partner_packages")
+        .select("*")
+        .eq("partner_id", params.id)
+        .order("package_number", { ascending: true }),
     ]);
 
   if (!partner) {
     notFound();
   }
+
+  const current = currentPackage(packages ?? []);
 
   const notes: NoteRow[] = (notesRaw ?? []).map((n) => {
     const profile = (
@@ -64,10 +72,21 @@ export default async function PartnerDetailPage({
           <ArrowLeft className="h-4 w-4" /> Back to Annual Partners
         </Link>
         <div className="mt-2 flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {partner.canonical_name}
-          </h1>
-          <Badge variant="outline">Renews {formatDate(partner.renewal_date)}</Badge>
+          {partner.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={partner.logo_url}
+              alt={partner.canonical_name}
+              className="h-9 object-contain"
+            />
+          ) : (
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {partner.canonical_name}
+            </h1>
+          )}
+          {current?.end_date && (
+            <Badge variant="outline">Renews {formatDate(current.end_date)}</Badge>
+          )}
         </div>
         {partner.status_note && (
           <p className="mt-1 text-sm text-muted-foreground">{partner.status_note}</p>
@@ -76,10 +95,10 @@ export default async function PartnerDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Package details</CardTitle>
+          <CardTitle className="text-base">Company & package details</CardTitle>
         </CardHeader>
         <CardContent>
-          <PartnerEditor partner={partner} />
+          <PartnerProfileEditor partner={partner} packages={packages ?? []} />
         </CardContent>
       </Card>
 
