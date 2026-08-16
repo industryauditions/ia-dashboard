@@ -1,29 +1,63 @@
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PartnerCard } from "@/components/annual-partners/partner-card";
+import { AddPartnerDialog } from "@/components/annual-partners/add-partner-dialog";
 import {
   PostScheduleTable,
   type PostScheduleRow,
 } from "@/components/annual-partners/post-schedule-table";
 import { Card, CardContent } from "@/components/ui/card";
+import { daysUntil } from "@/lib/format";
+import { currentPackage } from "@/lib/partner-packages";
+import type { Tables } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function AnnualPartnersPage() {
   const supabase = createClient();
 
-  const [{ data: partners }, { data: postSchedule }] = await Promise.all([
-    supabase
-      .from("annual_partners")
-      .select("*")
-      .order("canonical_name", { ascending: true }),
-    supabase
-      .from("post_schedule")
-      .select(
-        "id, raw_company_text, audition_date_text, posting_time_text, country, is_posted, grid_prepped, story_prepped, partner_id, annual_partners(canonical_name)"
-      )
-      .order("created_at", { ascending: false }),
-  ]);
+  const [{ data: partners }, { data: packages }, { data: postSchedule }] =
+    await Promise.all([
+      supabase
+        .from("annual_partners")
+        .select("*")
+        .order("canonical_name", { ascending: true }),
+      supabase
+        .from("partner_packages")
+        .select("*")
+        .order("package_number", { ascending: true }),
+      supabase
+        .from("post_schedule")
+        .select(
+          "id, raw_company_text, audition_date_text, posting_time_text, country, is_posted, grid_prepped, story_prepped, partner_id, annual_partners(canonical_name)"
+        )
+        .order("created_at", { ascending: false }),
+    ]);
+
+  const packagesByPartner = new Map<string, Tables<"partner_packages">[]>();
+  for (const pkg of packages ?? []) {
+    const list = packagesByPartner.get(pkg.partner_id) ?? [];
+    list.push(pkg);
+    packagesByPartner.set(pkg.partner_id, list);
+  }
+
+  // Cards are ordered by days-until-renewal ascending (soonest renewal
+  // first); partners with no package/renewal date yet sink to the bottom.
+  const partnerCards = (partners ?? [])
+    .map((partner) => {
+      const partnerPackages = packagesByPartner.get(partner.id) ?? [];
+      const current = currentPackage(partnerPackages);
+      const days = current ? daysUntil(current.end_date) : null;
+      return { partner, packages: partnerPackages, current, days };
+    })
+    .sort((a, b) => {
+      if (a.days === null && b.days === null) {
+        return a.partner.canonical_name.localeCompare(b.partner.canonical_name);
+      }
+      if (a.days === null) return 1;
+      if (b.days === null) return -1;
+      return a.days - b.days;
+    });
 
   const rows: PostScheduleRow[] = (postSchedule ?? []).map((r) => ({
     id: r.id,
@@ -40,11 +74,14 @@ export default async function AnnualPartnersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Annual Partners</h1>
-        <p className="text-sm text-muted-foreground">
-          Partner packages, renewals, and the shared post schedule.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Annual Partners</h1>
+          <p className="text-sm text-muted-foreground">
+            Partner packages, renewals, and the shared post schedule.
+          </p>
+        </div>
+        <AddPartnerDialog />
       </div>
 
       <Tabs defaultValue="partners">
@@ -54,10 +91,16 @@ export default async function AnnualPartnersPage() {
         </TabsList>
 
         <TabsContent value="partners" className="mt-6">
-          {partners && partners.length > 0 ? (
+          {partnerCards.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {partners.map((p) => (
-                <PartnerCard key={p.id} partner={p} />
+              {partnerCards.map(({ partner, packages: partnerPackages, current, days }) => (
+                <PartnerCard
+                  key={partner.id}
+                  partner={partner}
+                  packages={partnerPackages}
+                  current={current}
+                  days={days}
+                />
               ))}
             </div>
           ) : (

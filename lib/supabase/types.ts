@@ -19,6 +19,7 @@ export type Database = {
           canonical_name: string
           created_at: string
           id: string
+          logo_url: string | null
           package_total: number
           remaining: number | null
           renewal_date: string | null
@@ -30,6 +31,7 @@ export type Database = {
           canonical_name: string
           created_at?: string
           id?: string
+          logo_url?: string | null
           package_total?: number
           remaining?: number | null
           renewal_date?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           canonical_name?: string
           created_at?: string
           id?: string
+          logo_url?: string | null
           package_total?: number
           remaining?: number | null
           renewal_date?: string | null
@@ -49,6 +52,53 @@ export type Database = {
           used?: number
         }
         Relationships: []
+      }
+      partner_packages: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          package_number: number
+          partner_id: string
+          start_date: string | null
+          total_auditions: number
+          updated_at: string
+          used_auditions: number
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          package_number?: number
+          partner_id: string
+          start_date?: string | null
+          total_auditions?: number
+          updated_at?: string
+          used_auditions?: number
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          package_number?: number
+          partner_id?: string
+          start_date?: string | null
+          total_auditions?: number
+          updated_at?: string
+          used_auditions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_packages_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "annual_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_sessions: {
         Row: {
