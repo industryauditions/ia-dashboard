@@ -136,6 +136,16 @@ export function PostScheduleTable({
   const sortedBase = useMemo(() => {
     return [...orderedRows].sort((a, b) => {
       if (a.is_posted !== b.is_posted) return a.is_posted ? 1 : -1;
+
+      // Primary sort: soonest "Date Posted" first. Rows without a go-live
+      // date fall to the end of their group, ordered by manual drag
+      // position (sort_order) — which is also the tie-breaker for rows
+      // that share the same go-live date.
+      const aTime = a.post_live_at ? new Date(a.post_live_at).getTime() : null;
+      const bTime = b.post_live_at ? new Date(b.post_live_at).getTime() : null;
+      if (aTime !== null && bTime !== null && aTime !== bTime) return aTime - bTime;
+      if (aTime !== null && bTime === null) return -1;
+      if (aTime === null && bTime !== null) return 1;
       return (a.sort_order ?? 0) - (b.sort_order ?? 0);
     });
   }, [orderedRows]);

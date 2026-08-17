@@ -43,6 +43,8 @@ export default async function AnnualPartnersPage() {
 
   // Cards are ordered by days-until-renewal ascending (soonest renewal
   // first); partners with no package/renewal date yet sink to the bottom.
+  // Inactive partners always sink below all active ones, regardless of
+  // renewal date.
   const partnerCards = (partners ?? [])
     .map((partner) => {
       const partnerPackages = packagesByPartner.get(partner.id) ?? [];
@@ -51,6 +53,9 @@ export default async function AnnualPartnersPage() {
       return { partner, packages: partnerPackages, current, days };
     })
     .sort((a, b) => {
+      if (a.partner.is_active !== b.partner.is_active) {
+        return a.partner.is_active ? -1 : 1;
+      }
       if (a.days === null && b.days === null) {
         return a.partner.canonical_name.localeCompare(b.partner.canonical_name);
       }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/types";
 
 export function PartnerCard({
@@ -18,10 +19,16 @@ export function PartnerCard({
   const used = current?.used_auditions ?? 0;
   const remaining = Math.max(total - used, 0);
   const pct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+  const inactive = !partner.is_active;
 
   return (
     <Link href={`/annual-partners/${partner.id}`} className="block h-full">
-      <Card className="h-full transition-shadow hover:shadow-md">
+      <Card
+        className={cn(
+          "h-full transition-shadow hover:shadow-md",
+          inactive && "bg-muted/40 grayscale"
+        )}
+      >
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             {partner.logo_url ? (
@@ -30,18 +37,34 @@ export function PartnerCard({
                 src={partner.logo_url}
                 alt={partner.canonical_name}
                 title={partner.canonical_name}
-                className="h-10 max-w-[65%] object-contain object-left"
+                className={cn(
+                  "h-10 max-w-[65%] object-contain object-left",
+                  inactive && "opacity-50"
+                )}
               />
             ) : (
-              <CardTitle className="truncate text-base">{partner.canonical_name}</CardTitle>
-            )}
-            {days !== null && (
-              <Badge
-                variant={days < 0 ? "destructive" : days <= 14 ? "warning" : "secondary"}
-                className="shrink-0 whitespace-nowrap"
+              <CardTitle
+                className={cn(
+                  "truncate text-base",
+                  inactive && "text-muted-foreground"
+                )}
               >
-                {days < 0 ? `${Math.abs(days)}d overdue` : `${days}d until renewal`}
+                {partner.canonical_name}
+              </CardTitle>
+            )}
+            {inactive ? (
+              <Badge variant="outline" className="shrink-0 whitespace-nowrap text-muted-foreground">
+                Inactive
               </Badge>
+            ) : (
+              days !== null && (
+                <Badge
+                  variant={days < 0 ? "destructive" : days <= 14 ? "warning" : "secondary"}
+                  className="shrink-0 whitespace-nowrap"
+                >
+                  {days < 0 ? `${Math.abs(days)}d overdue` : `${days}d until renewal`}
+                </Badge>
+              )
             )}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -58,7 +81,13 @@ export function PartnerCard({
             <span>{remaining} remaining</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            <div
+              className={cn(
+                "h-full rounded-full",
+                inactive ? "bg-muted-foreground/40" : "bg-primary"
+              )}
+              style={{ width: `${pct}%` }}
+            />
           </div>
         </CardContent>
       </Card>

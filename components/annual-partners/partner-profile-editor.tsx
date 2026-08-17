@@ -77,6 +77,29 @@ export function PartnerProfileEditor({
   const [profileSaved, setProfileSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
+  // --- Active / inactive ---
+  const [isActive, setIsActive] = useState(partner.is_active);
+  const [savingActive, setSavingActive] = useState(false);
+  const [activeError, setActiveError] = useState<string | null>(null);
+
+  async function handleToggleActive() {
+    const next = !isActive;
+    setSavingActive(true);
+    setActiveError(null);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("annual_partners")
+      .update({ is_active: next })
+      .eq("id", partner.id);
+    setSavingActive(false);
+    if (error) {
+      setActiveError(error.message);
+      return;
+    }
+    setIsActive(next);
+    router.refresh();
+  }
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     if (!file) return;
@@ -227,6 +250,36 @@ export function PartnerProfileEditor({
           {savingProfile ? "Saving…" : "Save name & logo"}
         </Button>
       </div>
+
+      <div className="flex items-center justify-between rounded-md border p-3">
+        <div>
+          <p className="text-sm font-medium">Mark as inactive</p>
+          <p className="text-xs text-muted-foreground">
+            Inactive partners sink to the bottom of the Annual Partners page and show
+            greyed out. Use this for partners like a lapsed package that hasn&apos;t
+            renewed yet.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!isActive}
+          onClick={handleToggleActive}
+          disabled={savingActive}
+          className={cn(
+            "relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50",
+            !isActive ? "bg-destructive" : "bg-muted"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
+              !isActive ? "translate-x-5" : "translate-x-0.5"
+            )}
+          />
+        </button>
+      </div>
+      {activeError && <p className="text-xs text-destructive">{activeError}</p>}
 
       <div className="border-t pt-4">
         <div className="mb-3 flex items-center justify-between">

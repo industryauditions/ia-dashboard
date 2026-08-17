@@ -19,6 +19,7 @@ export type Database = {
           canonical_name: string
           created_at: string
           id: string
+          is_active: boolean
           logo_url: string | null
           package_total: number
           remaining: number | null
@@ -31,6 +32,7 @@ export type Database = {
           canonical_name: string
           created_at?: string
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           package_total?: number
           remaining?: number | null
@@ -43,6 +45,7 @@ export type Database = {
           canonical_name?: string
           created_at?: string
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           package_total?: number
           remaining?: number | null
