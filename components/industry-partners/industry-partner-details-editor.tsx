@@ -161,28 +161,24 @@ export function IndustryPartnerDetailsEditor({
             </PopoverContent>
           </Popover>
         </div>
-        <div className="flex items-end pb-1">
+        <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-2">
+          <span className="text-sm font-medium">Emailed</span>
           <button
             type="button"
             role="switch"
             aria-checked={emailed}
             onClick={() => setEmailed((v) => !v)}
-            className="flex items-center gap-3"
+            className={cn(
+              "relative h-6 w-11 shrink-0 rounded-full transition-colors",
+              emailed ? "bg-emerald-600" : "bg-muted"
+            )}
           >
             <span
               className={cn(
-                "relative h-6 w-11 shrink-0 rounded-full transition-colors",
-                emailed ? "bg-emerald-600" : "bg-muted"
+                "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
+                emailed ? "translate-x-5" : "translate-x-0.5"
               )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  emailed ? "translate-x-5" : "translate-x-0.5"
-                )}
-              />
-            </span>
-            <span className="text-sm font-medium">Emailed</span>
+            />
           </button>
         </div>
         <div className="space-y-2 sm:col-span-2">
