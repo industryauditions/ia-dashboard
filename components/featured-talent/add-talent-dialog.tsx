@@ -38,49 +38,20 @@ export function AddTalentDialog() {
   const [open, setOpen] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [name, setName] = useState("");
+  const [country, setCountry] = useState("");
   const [followerCount, setFollowerCount] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<TalentStatus>("need_to_message");
-  const [looking, setLooking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lookupNote, setLookupNote] = useState<string | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-
-  async function handleUrlBlur() {
-    const handle = parseInstagramUsername(instagramUrl);
-    if (!handle || name.trim()) return;
-    setLooking(true);
-    setLookupNote(null);
-    try {
-      const res = await fetch("/api/talent/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle }),
-      });
-      const data = await res.json();
-      if (data.found) {
-        if (data.displayName) setName(data.displayName);
-        if (data.photoUrl) setPhotoUrl(data.photoUrl);
-        setLookupNote("Found a public profile — feel free to adjust the name.");
-      } else {
-        setLookupNote("Couldn't auto-fetch a profile — enter the name manually.");
-      }
-    } catch {
-      setLookupNote("Couldn't auto-fetch a profile — enter the name manually.");
-    } finally {
-      setLooking(false);
-    }
-  }
 
   function resetForm() {
     setInstagramUrl("");
     setName("");
+    setCountry("");
     setFollowerCount("");
     setNotes("");
     setStatus("need_to_message");
-    setPhotoUrl(null);
-    setLookupNote(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -109,8 +80,8 @@ export function AddTalentDialog() {
         instagram_url: url,
         instagram_handle: handle,
         name: name.trim(),
+        location: country.trim() || null,
         follower_count: Number.isFinite(followers) ? followers : null,
-        profile_photo_url: photoUrl,
         status,
       })
       .select("id")
@@ -150,10 +121,7 @@ export function AddTalentDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add featured talent</DialogTitle>
-          <DialogDescription>
-            Paste their Instagram profile link — we&apos;ll try to pull their
-            name and photo automatically.
-          </DialogDescription>
+          <DialogDescription>Paste their Instagram profile link.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -163,7 +131,6 @@ export function AddTalentDialog() {
               placeholder="https://www.instagram.com/janedoe"
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
-              onBlur={handleUrlBlur}
               required
             />
           </div>
@@ -171,15 +138,20 @@ export function AddTalentDialog() {
             <Label htmlFor="display-name">Name *</Label>
             <Input
               id="display-name"
-              placeholder={looking ? "Looking up…" : "Jane Doe"}
+              placeholder="Jane Doe"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={looking}
               required
             />
-            {lookupNote && (
-              <p className="text-xs text-muted-foreground">{lookupNote}</p>
-            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              placeholder="e.g. USA"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="follower-count">Number of followers</Label>

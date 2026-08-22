@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { NotesPanel, type NoteRow } from "@/components/notes/notes-panel";
 import { StatusEditor } from "@/components/featured-talent/status-editor";
 import { TalentFlagsEditor } from "@/components/featured-talent/talent-flags-editor";
+import { TalentDetailsEditor } from "@/components/featured-talent/talent-details-editor";
 import { formatCompactNumber } from "@/lib/format";
 import type { TalentStatus } from "@/lib/talent-status";
 
@@ -96,32 +97,15 @@ export default async function TalentDetailPage({
             featuredOnInstagram={talent.featured_on_instagram}
             askedToCreateContent={talent.asked_to_create_content}
           />
-          <div className="grid gap-4 sm:grid-cols-2 text-sm">
-            {talent.location && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Location
-                </p>
-                <p className="mt-1">{talent.location}</p>
-              </div>
-            )}
-            {talent.employer_text && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Employer
-                </p>
-                <p className="mt-1">{talent.employer_text}</p>
-              </div>
-            )}
-            {talent.bio && (
-              <div className="sm:col-span-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Bio
-                </p>
-                <p className="mt-1 whitespace-pre-wrap">{talent.bio}</p>
-              </div>
-            )}
-          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TalentDetailsEditor talent={talent} />
         </CardContent>
       </Card>
 
