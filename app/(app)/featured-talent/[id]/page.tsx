@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { NotesPanel, type NoteRow } from "@/components/notes/notes-panel";
 import { StatusEditor } from "@/components/featured-talent/status-editor";
+import { TalentFlagsEditor } from "@/components/featured-talent/talent-flags-editor";
+import { formatCompactNumber } from "@/lib/format";
 import type { TalentStatus } from "@/lib/talent-status";
 
 export const dynamic = "force-dynamic";
@@ -55,19 +58,27 @@ export default async function TalentDetailPage({
         >
           <ArrowLeft className="h-4 w-4" /> Back to Featured Talent
         </Link>
-        <div className="mt-3 flex items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <Avatar className="h-14 w-14">
             <AvatarImage src={talent.profile_photo_url ?? undefined} alt={talent.name} />
             <AvatarFallback>{talent.name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{talent.name}</h1>
-            {talent.instagram_handle && (
-              <p className="text-sm text-muted-foreground">
-                @{talent.instagram_handle.replace(/^@/, "")}
-              </p>
-            )}
+            <div className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+              {talent.instagram_handle && <span>@{talent.instagram_handle.replace(/^@/, "")}</span>}
+              {talent.follower_count !== null && (
+                <span>{formatCompactNumber(talent.follower_count)} followers</span>
+              )}
+            </div>
           </div>
+          {talent.instagram_url && (
+            <Button asChild variant="outline" size="sm" className="ml-auto">
+              <a href={talent.instagram_url} target="_blank" rel="noopener noreferrer">
+                Go to Instagram <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+              </a>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -79,6 +90,11 @@ export default async function TalentDetailPage({
           <StatusEditor
             talentId={talent.id}
             status={(talent.status as TalentStatus) || "need_to_message"}
+          />
+          <TalentFlagsEditor
+            talentId={talent.id}
+            featuredOnInstagram={talent.featured_on_instagram}
+            askedToCreateContent={talent.asked_to_create_content}
           />
           <div className="grid gap-4 sm:grid-cols-2 text-sm">
             {talent.location && (

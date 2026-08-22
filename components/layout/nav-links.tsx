@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   Star,
+  Clapperboard,
   Handshake,
   GraduationCap,
   type LucideIcon,
@@ -25,6 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Annual Partners", href: "/annual-partners", icon: Building2 },
   { label: "Events", href: "/events", icon: CalendarDays },
   { label: "Featured Talent", href: "/featured-talent", icon: Star },
+  { label: "Content", href: "/content", icon: Clapperboard },
   {
     label: "Industry Partner Program",
     href: "/industry-partner-program",

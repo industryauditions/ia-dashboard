@@ -182,11 +182,15 @@ export type Database = {
       }
       featured_talent: {
         Row: {
+          asked_to_create_content: boolean
           bio: string | null
           created_at: string
           employer_text: string | null
+          featured_on_instagram: boolean
+          follower_count: number | null
           id: string
           instagram_handle: string | null
+          instagram_url: string | null
           location: string | null
           name: string
           profile_photo_url: string | null
@@ -195,11 +199,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          asked_to_create_content?: boolean
           bio?: string | null
           created_at?: string
           employer_text?: string | null
+          featured_on_instagram?: boolean
+          follower_count?: number | null
           id?: string
           instagram_handle?: string | null
+          instagram_url?: string | null
           location?: string | null
           name: string
           profile_photo_url?: string | null
@@ -208,11 +216,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          asked_to_create_content?: boolean
           bio?: string | null
           created_at?: string
           employer_text?: string | null
+          featured_on_instagram?: boolean
+          follower_count?: number | null
           id?: string
           instagram_handle?: string | null
+          instagram_url?: string | null
           location?: string | null
           name?: string
           profile_photo_url?: string | null

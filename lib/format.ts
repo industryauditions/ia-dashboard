@@ -19,6 +19,12 @@ export function formatNumber(value: number | null | undefined) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+/** Compact follower-count style formatting, e.g. 12400 -> "12.4K". */
+export function formatCompactNumber(value: number | null | undefined) {
+  if (value === null || value === undefined) return "—";
+  return new Intl.NumberFormat("en-US", { notation: "compact" }).format(value);
+}
+
 export function formatDate(value: string | null | undefined) {
   if (!value) return "—";
   const d = new Date(value);
