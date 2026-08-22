@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -44,25 +45,27 @@ export function TrainingPartnerGrid({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <Card key={p.id}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">{p.college_name}</CardTitle>
-                {p.location && (
-                  <p className="text-xs text-muted-foreground">{p.location}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-1.5 text-sm">
-                {p.contact_name && (
-                  <p className="text-muted-foreground">{p.contact_name}</p>
-                )}
-                {p.email && <p className="text-muted-foreground">{p.email}</p>}
-                {p.status && (
-                  <Badge variant="secondary" className="mt-1">
-                    {p.status}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
+            <Link key={p.id} href={`/training-partner-program/${p.id}`}>
+              <Card className="h-full transition-shadow hover:shadow-md">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{p.college_name}</CardTitle>
+                  {p.location && (
+                    <p className="text-xs text-muted-foreground">{p.location}</p>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm">
+                  {p.contact_name && (
+                    <p className="text-muted-foreground">{p.contact_name}</p>
+                  )}
+                  {p.email && <p className="text-muted-foreground">{p.email}</p>}
+                  {p.status && (
+                    <Badge variant="secondary" className="mt-1">
+                      {p.status}
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { IndustryPartnerGrid } from "@/components/industry-partners/industry-partner-grid";
+import { AddIndustryPartnerDialog } from "@/components/industry-partners/add-industry-partner-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,16 @@ export default async function IndustryPartnerProgramPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Industry Partner Program
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Talent agencies and industry partners in the referral program.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Industry Partner Program
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Talent agencies and industry partners in the referral program.
+          </p>
+        </div>
+        <AddIndustryPartnerDialog />
       </div>
       <IndustryPartnerGrid partners={partners ?? []} />
     </div>

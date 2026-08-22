@@ -312,6 +312,45 @@ export type Database = {
         }
         Relationships: []
       }
+      industry_partner_notes: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          industry_partner_id: string
+          note: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          industry_partner_id: string
+          note: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          industry_partner_id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_partner_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "industry_partner_notes_industry_partner_id_fkey"
+            columns: ["industry_partner_id"]
+            isOneToOne: false
+            referencedRelation: "industry_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       industry_partners: {
         Row: {
           agency_name: string
@@ -556,6 +595,45 @@ export type Database = {
           stripe_active_subscriptions?: number | null
         }
         Relationships: []
+      }
+      training_partner_notes: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          note: string
+          training_partner_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          note: string
+          training_partner_id: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          training_partner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_partner_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_partner_notes_training_partner_id_fkey"
+            columns: ["training_partner_id"]
+            isOneToOne: false
+            referencedRelation: "training_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_partners: {
         Row: {

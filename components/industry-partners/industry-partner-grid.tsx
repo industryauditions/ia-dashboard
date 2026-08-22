@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -45,35 +46,37 @@ export function IndustryPartnerGrid({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <Card key={p.id}>
-              <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
-                <CardTitle className="text-base">{p.agency_name}</CardTitle>
-                {p.emailed ? (
-                  <Badge variant="success" className="shrink-0">
-                    Emailed
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="shrink-0">
-                    Not emailed
-                  </Badge>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-1.5 text-sm">
-                {p.contact_name && (
-                  <p className="text-muted-foreground">{p.contact_name}</p>
-                )}
-                {p.email && <p className="text-muted-foreground">{p.email}</p>}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-xs text-muted-foreground">
-                  {p.discount_code && (
-                    <span>
-                      Code: <span className="font-medium text-foreground">{p.discount_code}</span>
-                    </span>
+            <Link key={p.id} href={`/industry-partner-program/${p.id}`}>
+              <Card className="h-full transition-shadow hover:shadow-md">
+                <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
+                  <CardTitle className="text-base">{p.agency_name}</CardTitle>
+                  {p.emailed ? (
+                    <Badge variant="success" className="shrink-0">
+                      Emailed
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="shrink-0">
+                      Not emailed
+                    </Badge>
                   )}
-                  <span>Redemptions: {formatNumber(p.redemptions ?? 0)}</span>
-                  <span>Already using: {formatNumber(p.already_using_count ?? 0)}</span>
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm">
+                  {p.contact_name && (
+                    <p className="text-muted-foreground">{p.contact_name}</p>
+                  )}
+                  {p.email && <p className="text-muted-foreground">{p.email}</p>}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-xs text-muted-foreground">
+                    {p.discount_code && (
+                      <span>
+                        Code: <span className="font-medium text-foreground">{p.discount_code}</span>
+                      </span>
+                    )}
+                    <span>Redemptions: {formatNumber(p.redemptions ?? 0)}</span>
+                    <span>Already using: {formatNumber(p.already_using_count ?? 0)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

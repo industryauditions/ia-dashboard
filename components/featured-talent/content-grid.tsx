@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 
 import { TalentCard } from "@/components/featured-talent/talent-card";
-import { AddTalentDialog } from "@/components/featured-talent/add-talent-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -12,11 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 import { TALENT_STATUSES, TALENT_STATUS_LABELS } from "@/lib/talent-status";
 import { TALENT_SORT_OPTIONS, sortTalent, type TalentSortOption } from "@/lib/talent-sort";
 import type { Tables } from "@/lib/supabase/types";
 
-export function TalentGrid({ talent }: { talent: Tables<"featured_talent">[] }) {
+export function ContentGrid({ talent }: { talent: Tables<"featured_talent">[] }) {
   const [filter, setFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<TalentSortOption>("date_added");
 
@@ -26,6 +26,17 @@ export function TalentGrid({ talent }: { talent: Tables<"featured_talent">[] }) 
   }, [talent, filter]);
 
   const sorted = useMemo(() => sortTalent(filtered, sortBy), [filtered, sortBy]);
+
+  if (talent.length === 0) {
+    return (
+      <Card className="border-dashed">
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          No one has been asked to create content yet. Check the box on a
+          talent&apos;s page under Featured Talent to add them here.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -71,7 +82,6 @@ export function TalentGrid({ talent }: { talent: Tables<"featured_talent">[] }) 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <AddTalentDialog />
         {sorted.map((t) => (
           <TalentCard key={t.id} talent={t} />
         ))}

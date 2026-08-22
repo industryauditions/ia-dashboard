@@ -30,8 +30,12 @@ export function NotesPanel({
   parentId,
   initialNotes,
 }: {
-  table: "partner_notes" | "featured_talent_notes";
-  parentIdField: "partner_id" | "talent_id";
+  table:
+    | "partner_notes"
+    | "featured_talent_notes"
+    | "industry_partner_notes"
+    | "training_partner_notes";
+  parentIdField: "partner_id" | "talent_id" | "industry_partner_id" | "training_partner_id";
   parentId: string;
   initialNotes: NoteRow[];
 }) {

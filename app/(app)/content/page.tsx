@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { TalentCard } from "@/components/featured-talent/talent-card";
-import { Card, CardContent } from "@/components/ui/card";
+import { ContentGrid } from "@/components/featured-talent/content-grid";
 
 export const dynamic = "force-dynamic";
 
@@ -23,20 +22,7 @@ export default async function ContentPage() {
         </p>
       </div>
 
-      {talent && talent.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {talent.map((t) => (
-            <TalentCard key={t.id} talent={t} />
-          ))}
-        </div>
-      ) : (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            No one has been asked to create content yet. Check the box on a
-            talent&apos;s page under Featured Talent to add them here.
-          </CardContent>
-        </Card>
-      )}
+      <ContentGrid talent={talent ?? []} />
     </div>
   );
 }
